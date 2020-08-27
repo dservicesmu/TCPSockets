@@ -1,2 +1,2 @@
 # TCPSockets
-Sample TCP/IP applicaton
+Sample client/server TCP socket applicaton
