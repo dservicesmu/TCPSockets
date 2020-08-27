@@ -23,47 +23,46 @@ int main()
     }
 
     // Open the client socket
-    struct addrinfo* result = NULL;
-    struct addrinfo* ptr = NULL;
-    struct addrinfo  hints;
+    struct addrinfo  addrHintsIn;
+    struct addrinfo* pAddrOut = NULL;
 
-    ZeroMemory(&hints, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
+    ZeroMemory(&addrHintsIn, sizeof(addrHintsIn));
+    addrHintsIn.ai_family = AF_INET;
+    addrHintsIn.ai_socktype = SOCK_STREAM;
+    addrHintsIn.ai_protocol = IPPROTO_TCP;
 
     // Get the Server IP address and port
-    const char HOSTNAME[] = "MathTixWinDev";
-    const char SERVER_PORT[] = "48000";
-    iResult = getaddrinfo(HOSTNAME, SERVER_PORT, &hints, &result);
+    std::string hostname("MathTixWinDev");
+    std::string serverPort("48000");
+    iResult = getaddrinfo(hostname.c_str(), serverPort.c_str(), &addrHintsIn, &pAddrOut);
     if (iResult != 0)
     {
         std::cerr << "Call to getaddrinfo() failed" << std::endl;
         WSACleanup();
         return 1;
     }
-    ptr = result;
 
-    // Create the socketf
-    SOCKET socketToServer = INVALID_SOCKET;
-    socketToServer = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
-    if (socketToServer == INVALID_SOCKET)
+    // Create the socket
+    SOCKET serverSocket = INVALID_SOCKET;
+    serverSocket = socket(pAddrOut->ai_family, pAddrOut->ai_socktype, pAddrOut->ai_protocol);
+    if (serverSocket == INVALID_SOCKET)
     {
         std::cerr << "Socket creation error: " << WSAGetLastError() << std::endl;
+        freeaddrinfo(pAddrOut);
         WSACleanup();
         return 1;
     }
 
     // Connect to the server
-    iResult = connect(socketToServer, ptr->ai_addr, (int)ptr->ai_addrlen);
+    iResult = connect(serverSocket, pAddrOut->ai_addr, (int)pAddrOut->ai_addrlen);
     if (iResult == SOCKET_ERROR)
     {
-        closesocket(socketToServer);
-        socketToServer = INVALID_SOCKET;
+        closesocket(serverSocket);
+        serverSocket = INVALID_SOCKET;
     }
-    freeaddrinfo(result);
+    freeaddrinfo(pAddrOut);
 
-    if (socketToServer == INVALID_SOCKET)
+    if (serverSocket == INVALID_SOCKET)
     {
         std::cerr << "Server connection failed" << std::endl;
         WSACleanup();
@@ -71,15 +70,27 @@ int main()
     }
 
     // Send a message to the server
-    const char* messageToServer = "Send me some data";
-    iResult = send(socketToServer, messageToServer, (int)strlen(messageToServer), 0);
+    std::string messageToServer("Send me some data");
+    iResult = send(serverSocket, messageToServer.c_str(), messageToServer.length(), 0);
     if (iResult == SOCKET_ERROR)
     {
         std::cerr << "Send message to server failed: " << WSAGetLastError() << std::endl;
-        closesocket(socketToServer);
+        closesocket(serverSocket);
         WSACleanup();
         return 1;
     }
+
+    iResult = shutdown(serverSocket, SD_SEND);
+    if (iResult == SOCKET_ERROR)
+    {
+        std::cerr << "Server socket shutdown failed: " << WSAGetLastError() << std::endl;
+        closesocket(serverSocket);
+        WSACleanup();
+        return -1;
+    }
+
+    closesocket(serverSocket);
+    WSACleanup();
 
     return 0;
 }
