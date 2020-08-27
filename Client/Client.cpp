@@ -5,6 +5,7 @@
 #endif
 
 #include <iostream>
+#include <array>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -71,7 +72,7 @@ int main()
 
     // Send a message to the server
     std::string messageToServer("Send me some data");
-    iResult = send(serverSocket, messageToServer.c_str(), messageToServer.length(), 0);
+    iResult = send(serverSocket, messageToServer.c_str(), static_cast<int>(messageToServer.length()), 0);
     if (iResult == SOCKET_ERROR)
     {
         std::cerr << "Send message to server failed: " << WSAGetLastError() << std::endl;
@@ -80,6 +81,7 @@ int main()
         return 1;
     }
 
+    // Shudown the sockent for sending
     iResult = shutdown(serverSocket, SD_SEND);
     if (iResult == SOCKET_ERROR)
     {
@@ -88,6 +90,26 @@ int main()
         WSACleanup();
         return -1;
     }
+
+    // Receive messages from the server
+    std::array<char, 128> receiveBuffer;
+    do {
+        iResult = recv(serverSocket, &receiveBuffer[0], /*static_cast<int>(receiveBuffer.size())*/ 64, 0);
+        if (iResult > 0)
+        {
+            receiveBuffer[iResult] = NULL;
+            std::cout << std::string(&receiveBuffer[0]) << std::endl;
+        }
+        else if (iResult == 0)
+        {
+            std::cerr << "Severver connection closed" << std::endl;
+        }
+        else
+        {
+            std::cerr << "Recieve from server failed: " << WSAGetLastError() << std::endl;
+        }
+
+    } while (iResult > 0);
 
     closesocket(serverSocket);
     WSACleanup();
