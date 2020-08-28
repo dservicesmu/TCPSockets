@@ -3,6 +3,7 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include <iostream>
 #include <string>
@@ -86,6 +87,22 @@ int main()
         closesocket(listenSocket);
         WSACleanup();
         return 1;
+    }
+
+    sockaddr clientAddr;
+    int addrSize = sizeof(clientAddr);
+    iResult = getpeername(clientSocket, &clientAddr, &addrSize);
+    if (iResult == 0)
+    {
+        std::array<char, 64> addressStr;
+        DWORD outLen = 64;
+        iResult = WSAAddressToStringA(&clientAddr, addrSize, NULL, &addressStr[0], &outLen);
+        if (iResult == 0)
+        {
+            addressStr[outLen] = NULL;
+            std::cout << "Client connected from address: "
+                << std::string(&addressStr[0]) << std::endl;
+        }
     }
 
     std::string quote("Four score and seven years ago our fathers brought forth on this continent, "
