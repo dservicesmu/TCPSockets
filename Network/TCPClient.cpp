@@ -11,6 +11,7 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
+/*
 int main()
 {
     // Initalize winsock
@@ -94,7 +95,7 @@ int main()
     // Receive messages from the server
     std::array<char, 128> receiveBuffer;
     do {
-        iResult = recv(serverSocket, &receiveBuffer[0], /*static_cast<int>(receiveBuffer.size())*/ 64, 0);
+        iResult = recv(serverSocket, &receiveBuffer[0], static_cast<int>(receiveBuffer.size()), 0);
         if (iResult > 0)
         {
             receiveBuffer[iResult] = NULL;
@@ -116,3 +117,4 @@ int main()
 
     return 0;
 }
+*/
