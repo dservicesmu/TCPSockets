@@ -4,27 +4,20 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#include <TCPClient.h>
 #include <iostream>
+#include <strstream>
 #include <array>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#pragma comment(lib, "Ws2_32.lib")
 
-/*
-int main()
+TCPSocket TCPClient::connect(
+	std::string const& host,
+	std::uint16_t port
+	)
 {
-    // Initalize winsock
-    WSADATA wsaData;
-    WORD wVersion = MAKEWORD(2, 2);
-    int iResult = WSAStartup(wVersion, &wsaData);
-    if (iResult != 0)
-    {
-        std::cerr << "Winsock startup failed" << std::endl;
-        return 1;
-    }
-
-    // Open the client socket
+	 // Resolve the port locally
     struct addrinfo  addrHintsIn;
     struct addrinfo* pAddrOut = NULL;
 
@@ -34,87 +27,40 @@ int main()
     addrHintsIn.ai_protocol = IPPROTO_TCP;
 
     // Get the Server IP address and port
-    std::string hostname("MathTixWinDev");
-    std::string serverPort("48000");
-    iResult = getaddrinfo(hostname.c_str(), serverPort.c_str(), &addrHintsIn, &pAddrOut);
+    std::ostrstream serverPort;
+    serverPort << port << std::ends;
+    int iResult = ::getaddrinfo(host.c_str(), serverPort.str(), &addrHintsIn, &pAddrOut);
     if (iResult != 0)
     {
-        std::cerr << "Call to getaddrinfo() failed" << std::endl;
-        WSACleanup();
-        return 1;
+        std::ostrstream msg;
+        msg << "Call to getaddrinfo() failed, error = " << iResult << std::ends;
+        throw std::runtime_error(msg.str());
     }
 
-    // Create the socket
-    SOCKET serverSocket = INVALID_SOCKET;
-    serverSocket = socket(pAddrOut->ai_family, pAddrOut->ai_socktype, pAddrOut->ai_protocol);
-    if (serverSocket == INVALID_SOCKET)
+    // Create the connection socket.
+    SOCKET socket = ::socket(pAddrOut->ai_family, pAddrOut->ai_socktype, pAddrOut->ai_protocol);
+    if (socket == INVALID_SOCKET)
     {
-        std::cerr << "Socket creation error: " << WSAGetLastError() << std::endl;
+        std::ostrstream msg;
+        msg << "Connection socket creation error, error = " << WSAGetLastError() << std::ends;
         freeaddrinfo(pAddrOut);
-        WSACleanup();
-        return 1;
+        throw std::runtime_error(msg.str());
     }
 
-    // Connect to the server
-    iResult = connect(serverSocket, pAddrOut->ai_addr, (int)pAddrOut->ai_addrlen);
+     // Connect to the server
+    iResult = ::connect(socket, pAddrOut->ai_addr, (int)pAddrOut->ai_addrlen);
     if (iResult == SOCKET_ERROR)
     {
-        closesocket(serverSocket);
-        serverSocket = INVALID_SOCKET;
+        closesocket(socket);
+        socket = INVALID_SOCKET;
     }
     freeaddrinfo(pAddrOut);
 
-    if (serverSocket == INVALID_SOCKET)
+    if (socket == INVALID_SOCKET)
     {
-        std::cerr << "Server connection failed" << std::endl;
-        WSACleanup();
-        return 1;
+        std::ostrstream msg;
+        msg << "Connection failed" << std::ends;
+        throw std::runtime_error(msg.str());
     }
-
-    // Send a message to the server
-    std::string messageToServer("Send me some data");
-    iResult = send(serverSocket, messageToServer.c_str(), static_cast<int>(messageToServer.length()), 0);
-    if (iResult == SOCKET_ERROR)
-    {
-        std::cerr << "Send message to server failed: " << WSAGetLastError() << std::endl;
-        closesocket(serverSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    // Shudown the sockent for sending
-    iResult = shutdown(serverSocket, SD_SEND);
-    if (iResult == SOCKET_ERROR)
-    {
-        std::cerr << "Server socket shutdown failed: " << WSAGetLastError() << std::endl;
-        closesocket(serverSocket);
-        WSACleanup();
-        return -1;
-    }
-
-    // Receive messages from the server
-    std::array<char, 128> receiveBuffer;
-    do {
-        iResult = recv(serverSocket, &receiveBuffer[0], static_cast<int>(receiveBuffer.size()), 0);
-        if (iResult > 0)
-        {
-            receiveBuffer[iResult] = NULL;
-            std::cout << std::string(&receiveBuffer[0]) << std::endl;
-        }
-        else if (iResult == 0)
-        {
-            std::cerr << "Severver connection closed" << std::endl;
-        }
-        else
-        {
-            std::cerr << "Recieve from server failed: " << WSAGetLastError() << std::endl;
-        }
-
-    } while (iResult > 0);
-
-    closesocket(serverSocket);
-    WSACleanup();
-
-    return 0;
+    return TCPSocket(socket);
 }
-*/

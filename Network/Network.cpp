@@ -15,7 +15,7 @@ void Network::initialize()
     if (iResult != 0)
     {
         std::ostrstream ostr;
-        ostr << "Winsock startup failed, error = " << iResult << std::endl;
+        ostr << "Winsock startup failed, error = " << iResult << std::ends;
         throw std::runtime_error(ostr.str());
     }
 }
@@ -26,7 +26,7 @@ void Network::uninitialize()
     if (iResult == SOCKET_ERROR)
     {
         std::ostrstream ostr;
-        ostr << "Winsock cleanup failed, error = " << WSAGetLastError() << std::endl;
+        ostr << "Winsock cleanup failed, error = " << WSAGetLastError() << std::ends;
         throw std::runtime_error(ostr.str());
     }
 }
@@ -34,6 +34,13 @@ void Network::uninitialize()
 
 std::shared_ptr<TCPServer>& Network::createTCPServer()
 {
-    m_tcpServers.emplace_back(std::shared_ptr<TCPServer>(new TCPServer()));
+    m_tcpServers.push_back(std::shared_ptr<TCPServer>(new TCPServer()));
     return m_tcpServers.back();
+}
+
+
+std::shared_ptr<TCPClient>& Network::createTCPClient()
+{
+    m_tcpClients.push_back(std::shared_ptr<TCPClient>(new TCPClient()));
+    return m_tcpClients.back();
 }

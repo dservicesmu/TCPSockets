@@ -1,13 +1,8 @@
-#ifndef TCPSOCKET_H
-#define TCPSOCKET_H
+#ifndef TCP_SOCKET_H
+#define TCP_SOCKET_H
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-
+#include <Platform.h>
 #include <string>
-#include <array>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -44,15 +39,23 @@ public:
 	TCPSocket(
 		SOCKET socket,
 		std::size_t bufferSize = 256
-	);
+		);
+	TCPSocket(const TCPSocket& src);
 
 	~TCPSocket();
 
+	TCPSocket& operator=(const TCPSocket& src);
+
 	std::string getAddress();
-	void send(char const* dataPtr, std::size_t length);
+	void send(
+		char const* dataPtr,
+		std::size_t length
+		);
 	TCPData receive();
 
 protected:
+	SOCKET getSocket() { return m_socket;  }
+	void setSocket(SOCKET socket) { m_socket = socket;  }
 
 private:
 	std::size_t m_bufferSize;
@@ -61,4 +64,4 @@ private:
 	SOCKET m_socket;
 };
 
-#endif  // TCPSOCKET_H
+#endif  // TCP_SOCKET_H

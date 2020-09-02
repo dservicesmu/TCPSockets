@@ -1,4 +1,5 @@
 
+#include <Platform.h>
 #include <iostream>
 #include <Network.h>
 #include <TCPServer.h>
@@ -35,11 +36,14 @@ int main()
 			std::shared_ptr<TCPServer> server;
 			TCPSocket socket;
 			TCPData buf;
+			std::uint16_t portNumber = 48000;
 
 			server = network->createTCPServer();
-			server->bind(48000);
+			server->bind(portNumber);
 			server->listen();
+			std::cout << "Server listening or port " << portNumber << std::endl;
 			socket = server->accept();
+			std::cout << "Client connected from " << socket.getAddress() << std::endl;
 
 			buf = socket.receive();
 			std::string msg(buf.getData(), buf.getLength());
@@ -50,13 +54,22 @@ int main()
 		}
 		catch(std::runtime_error& rt)
 		{
-			std::cerr << rt.what() << std::endl;
+			std::cerr << "Server error = " << rt.what() << std::endl;
+		}
+		catch (std::exception e)
+		{
+			std::cerr << "C++ exception = " << e.what() << std::endl;
 		}
 
 		network->uninitialize();
 	}
 	catch (std::runtime_error& rt)
 	{
-		std::cerr << rt.what() << std::endl;
+		std::cerr << "Server error = " << rt.what() << std::endl;
 	}
+	catch (std::exception e)
+	{
+		std::cerr << "C++ exception = " << e.what() << std::endl;
+	}
+	return 0;
 }

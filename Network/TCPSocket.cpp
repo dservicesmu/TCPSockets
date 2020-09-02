@@ -23,10 +23,38 @@ TCPSocket::TCPSocket(
     m_bufferPtr = new char[m_bufferSize];
 } 
 
+TCPSocket::TCPSocket(
+    const TCPSocket& src
+    ) : m_bufferSize(src.m_bufferSize)
+      , m_receiveSize(0)
+      , m_socket(src.m_socket)
+      , m_bufferPtr(NULL)
+{
+    if (m_bufferSize > 0)
+    {
+        m_bufferPtr = new char[m_bufferSize];
+    }
+}
+
 TCPSocket::~TCPSocket()
 {
     m_bufferSize = 0;
     delete[] m_bufferPtr;
+}
+
+TCPSocket& TCPSocket::operator=(const TCPSocket& src)
+{
+    if (this != &src)
+    {
+        m_bufferSize = src.m_bufferSize;
+        m_receiveSize = src.m_receiveSize;
+        m_socket = src.m_socket;
+        if (m_bufferSize > 0)
+        {
+            m_bufferPtr = new char[m_bufferSize];
+        }
+    }
+    return *this;
 }
 
 std::string TCPSocket::getAddress()
@@ -63,7 +91,16 @@ void TCPSocket::send(char const* dataPtr, size_t length)
 	if (iResult == SOCKET_ERROR)
 	{
 		std::ostrstream msg;
-		msg << "Send to clent failed: " << WSAGetLastError() << std::endl;
+		msg << "Send to clent failed: " << WSAGetLastError() << std::ends;
+		closesocket(m_socket);
+		throw std::runtime_error(msg.str());
+    }
+    else if (iResult < static_cast<int>(length))
+    {
+		std::ostrstream msg;
+		msg << "Requested (" << length << ") bytes to be sent. "
+            << "Only (" << iResult << ") bytes were sent."
+            << std::ends;
 		closesocket(m_socket);
 		throw std::runtime_error(msg.str());
     }

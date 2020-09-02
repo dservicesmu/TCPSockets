@@ -1,14 +1,10 @@
-#ifndef TCPSERVER_H
-#define TCPSERVER_H
+#ifndef TCP_SERVER_H
+#define TCP_SERVER_H
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-
+#include <Platform.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include "TCPSocket.h"
+#include <TCPSocket.h>
 
 class TCPServer
 {
@@ -26,4 +22,4 @@ private:
     SOCKET m_listenSocket = INVALID_SOCKET;
 };
 
-#endif // TCPSERVER_H
+#endif // TCP_SERVER_H

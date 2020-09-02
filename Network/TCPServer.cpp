@@ -86,30 +86,3 @@ TCPSocket TCPServer::accept()
     }
     return TCPSocket(socket);
 }
-
-    /*
-    else if (iResult == 0)
-    {
-        std::cout << "Connection is closing" << std::endl;
-    }
-    else
-    {
-        std::cerr << "Receive from client failed: " << WSAGetLastError() << std::endl;
-        closesocket(clientSocket);
-        return 1;
-    }
-
-    iResult = shutdown(clientSocket, SD_SEND);
-    if (iResult == SOCKET_ERROR)
-    {
-        std::cerr << "Clent socket shutdown failed: " << WSAGetLastError() << std::endl;
-        closesocket(clientSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    closesocket(clientSocket);
-    WSACleanup();
-
-    return 0;
-    */
