@@ -23,7 +23,8 @@ protected:
 
 private:
 	Mode m_mode;
-    SOCKET m_listenSocket = INVALID_SOCKET;
+	FD_SET m_listenSet;
+    SOCKET m_listenSocket;
 };
 
 #endif // TCP_SERVER_H

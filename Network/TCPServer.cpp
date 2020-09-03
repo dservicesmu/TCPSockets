@@ -5,7 +5,9 @@
 TCPServer::TCPServer(
     Mode mode
     ) : m_mode(mode)
+      , m_listenSocket(INVALID_SOCKET)
 {
+    FD_ZERO(&m_listenSet);
 }
 
 TCPServer::~TCPServer()
@@ -56,6 +58,7 @@ void TCPServer::bind(std::uint16_t port)
             msg << "Getpeername on socket failed, error = " << WSAGetLastError() << std::ends;
             throw std::runtime_error(msg.str());
         }
+        FD_SET(m_listenSocket, &m_listenSet);
     }
 
     // Bind the listening socket
@@ -101,15 +104,19 @@ void TCPServer::stopListen()
 
 TCPSocket TCPServer::accept()
 {
-    // Accept client connections
-    SOCKET socket = INVALID_SOCKET;
-    socket = ::accept(m_listenSocket, NULL, NULL);
-    if (socket == INVALID_SOCKET)
+	SOCKET socket = INVALID_SOCKET;
+    if (m_mode == Mode::Blocking
+        || (m_mode == Mode::Nonblocking && FD_ISSET(m_listenSocket, &m_listenSet)))
     {
-        std::ostrstream msg;
-        msg << "Accept on server socket failed, error = " << WSAGetLastError() << std::ends;
-        closesocket(m_listenSocket);
-        throw std::runtime_error(msg.str());
+		// Accept client connections
+		socket = ::accept(m_listenSocket, NULL, NULL);
+		if (socket == INVALID_SOCKET)
+		{
+			std::ostrstream msg;
+			msg << "Accept on server socket failed, error = " << WSAGetLastError() << std::ends;
+			closesocket(m_listenSocket);
+			throw std::runtime_error(msg.str());
+		}
     }
     return TCPSocket(socket);
 }
