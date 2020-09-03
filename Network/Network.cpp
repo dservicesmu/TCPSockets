@@ -29,9 +29,9 @@ void Network::uninitialize()
 }
 
 
-std::shared_ptr<TCPServer>& Network::createTCPServer()
+std::shared_ptr<TCPServer>& Network::createTCPServer(Mode mode)
 {
-    m_tcpServers.push_back(std::shared_ptr<TCPServer>(new TCPServer()));
+    m_tcpServers.push_back(std::shared_ptr<TCPServer>(new TCPServer(mode)));
     return m_tcpServers.back();
 }
 

@@ -18,7 +18,7 @@ public:
 	void initialize();
 	void uninitialize();
 
-	std::shared_ptr<TCPServer>& createTCPServer();
+	std::shared_ptr<TCPServer>& createTCPServer(Mode mode = Mode::Blocking);
 	std::shared_ptr<TCPClient>& createTCPClient();
 
 protected:

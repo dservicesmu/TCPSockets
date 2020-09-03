@@ -2,6 +2,15 @@
 #include <TCPServer.h>
 #include <strstream>
 
+TCPServer::TCPServer(
+    Mode mode
+    ) : m_mode(mode)
+{
+}
+
+TCPServer::~TCPServer()
+{
+}
 
 void TCPServer::bind(std::uint16_t port)
 {
@@ -36,6 +45,19 @@ void TCPServer::bind(std::uint16_t port)
         throw std::runtime_error(msg.str());
     }
 
+    // Set blocking mode as needed.
+    if (m_mode == Mode::Nonblocking)
+    {
+        u_long winsockmode = 1;
+        int iResult = ioctlsocket(m_listenSocket, FIONBIO, &winsockmode);
+        if (iResult == SOCKET_ERROR)
+        {
+            std::ostrstream msg;
+            msg << "Getpeername on socket failed, error = " << WSAGetLastError() << std::ends;
+            throw std::runtime_error(msg.str());
+        }
+    }
+
     // Bind the listening socket
     iResult = ::bind(m_listenSocket, pAddrOut->ai_addr, (int)pAddrOut->ai_addrlen);
     if (iResult == SOCKET_ERROR)
@@ -59,6 +81,21 @@ void TCPServer::listen()
         msg << "Listen on server socket failed, error = " << WSAGetLastError() << std::ends;
         closesocket(m_listenSocket);
         throw std::runtime_error(msg.str());
+    }
+}
+
+void TCPServer::stopListen()
+{
+    if (m_listenSocket != INVALID_SOCKET)
+    {
+		int iResult = closesocket(m_listenSocket);
+		if (iResult == SOCKET_ERROR)
+		{
+			std::ostrstream msg;
+			msg << "Call to closesocket failed, error = " << WSAGetLastError() << std::ends;
+			throw std::runtime_error(msg.str());
+		}
+		m_listenSocket = INVALID_SOCKET;
     }
 }
 

@@ -82,7 +82,7 @@ void TCPSocket::setMode(Mode mode)
 		if (iResult == SOCKET_ERROR)
 		{
 			std::ostrstream msg;
-			msg << "Getpeername on socket failed, error = " << WSAGetLastError() << std::ends;
+			msg << "Call to ioctlsocket on socket failed, error = " << WSAGetLastError() << std::ends;
 			throw std::runtime_error(msg.str());
 		}
     }

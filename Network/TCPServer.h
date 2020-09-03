@@ -8,19 +8,21 @@
 class TCPServer
 {
 public:
-	TCPServer() {}
-	~TCPServer() {}
+	TCPServer(Mode mode = Mode::Nonblocking);
+	~TCPServer();
 
-	Mode getMode();
-	void setMode(Mode mode);
+	Mode getMode() { return m_mode; }
 
 	void bind(std::uint16_t port);
 	void listen();
+	void stopListen();
 	TCPSocket accept();
+
 
 protected:
 
 private:
+	Mode m_mode;
     SOCKET m_listenSocket = INVALID_SOCKET;
 };
 
