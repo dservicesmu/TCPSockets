@@ -64,6 +64,7 @@ private:
 	std::size_t m_receiveSize;
 	char* m_bufferPtr;
 	SOCKET m_socket;
+	FD_SET m_fdSet;
 };
 
 #endif  // TCP_SOCKET_H

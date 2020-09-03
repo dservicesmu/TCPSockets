@@ -10,6 +10,7 @@ TCPSocket::TCPSocket(
       , m_socket(INVALID_SOCKET)
       , m_bufferPtr(NULL)
 {
+    FD_ZERO(&m_fdSet);
     m_bufferPtr = new char[m_bufferSize];
 }
 
@@ -22,6 +23,7 @@ TCPSocket::TCPSocket(
       , m_socket(socket)
       , m_bufferPtr(NULL)
 {
+    FD_ZERO(&m_fdSet);
     m_bufferPtr = new char[m_bufferSize];
 } 
 
@@ -32,6 +34,7 @@ TCPSocket::TCPSocket(
       , m_receiveSize(0)
       , m_socket(src.m_socket)
       , m_bufferPtr(NULL)
+      , m_fdSet(src.m_fdSet)
 {
     if (m_bufferSize > 0)
     {
