@@ -7,8 +7,11 @@
 
 class TCPServer
 {
-public:
+	friend class Network;
+protected:
 	TCPServer(Mode mode = Mode::Nonblocking);
+
+public:
 	~TCPServer();
 
 	Mode getMode() { return m_mode; }
@@ -17,7 +20,6 @@ public:
 	void listen();
 	void stopListen();
 	TCPSocket accept();
-
 
 protected:
 

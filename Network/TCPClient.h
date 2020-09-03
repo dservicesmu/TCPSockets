@@ -8,8 +8,11 @@
 
 class TCPClient
 {
-public:
+	friend class Network;
+protected:
 	TCPClient() {}
+
+public:
 	~TCPClient() {}
 
 	TCPSocket connect(
