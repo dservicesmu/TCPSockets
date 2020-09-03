@@ -35,7 +35,6 @@ int main()
 		{
 			std::shared_ptr<TCPServer> server;
 			TCPSocket socket;
-			TCPData buf;
 			std::uint16_t portNumber = 48000;
 
 			server = network->createTCPServer();
@@ -45,12 +44,18 @@ int main()
 			socket = server->accept();
 			std::cout << "Client connected from " << socket.getAddress() << std::endl;
 
-			buf = socket.receive();
-			std::string msg(buf.getData(), buf.getLength());
-			std::cout << "Received message from client: " << msg << std::endl;
-
-			socket.send(&quote[0], quote.length());
-
+			TCPData buf;
+			do {
+				buf = socket.receive();
+				std::string msg(buf.getData(), buf.getLength());
+				if (buf.getLength() > 0)
+				{
+					std::cout << "Received message from client: " << msg << std::endl;
+				}
+				socket.send(&quote[0], quote.length());
+			} while (buf.getLength() > 0);
+			std::cout << "Client disconnecting..." << std::endl;
+			socket.shutdown();
 		}
 		catch(std::runtime_error& rt)
 		{

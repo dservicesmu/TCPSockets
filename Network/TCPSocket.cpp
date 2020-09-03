@@ -69,7 +69,6 @@ std::string TCPSocket::getAddress()
     {
         std::ostrstream msg;
         msg << "Getpeername on socket failed, error = " << WSAGetLastError() << std::ends;
-        closesocket(m_socket);
         throw std::runtime_error(msg.str());
     }
 
@@ -78,7 +77,6 @@ std::string TCPSocket::getAddress()
 	{
 		std::ostrstream msg;
 		msg << "WSAAddressToStringA on socket failed, error = " << WSAGetLastError() << std::ends;
-		closesocket(m_socket);
 		throw std::runtime_error(msg.str());
 	}
 	addressStr[outLen] = NULL;
@@ -91,7 +89,7 @@ void TCPSocket::send(char const* dataPtr, size_t length)
 	if (iResult == SOCKET_ERROR)
 	{
 		std::ostrstream msg;
-		msg << "Send to clent failed: " << WSAGetLastError() << std::ends;
+		msg << "Send on socket failed: " << WSAGetLastError() << std::ends;
 		closesocket(m_socket);
 		throw std::runtime_error(msg.str());
     }
@@ -117,4 +115,28 @@ TCPData TCPSocket::receive()
 		throw std::runtime_error(msg.str());
     }
     return TCPData{ static_cast<std::size_t>(iResult), m_bufferPtr };
+}
+
+void TCPSocket::shutdown()
+{
+    int iResult = ::shutdown(m_socket, SD_SEND);
+    if (iResult == SOCKET_ERROR)
+    {
+		std::ostrstream msg;
+		msg << "Call to shutdown failed, error = " << WSAGetLastError() << std::ends;
+		closesocket(m_socket);
+		throw std::runtime_error(msg.str());
+    }
+}
+
+void TCPSocket::close()
+{
+    int iResult = closesocket(m_socket);
+    if (iResult == SOCKET_ERROR)
+    {
+		std::ostrstream msg;
+		msg << "Call to closesocket failed, error = " << WSAGetLastError() << std::ends;
+		throw std::runtime_error(msg.str());
+    }
+    m_socket = INVALID_SOCKET;
 }

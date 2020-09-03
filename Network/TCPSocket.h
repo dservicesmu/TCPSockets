@@ -25,7 +25,7 @@ public:
 	}
 
 	std::size_t getLength() { return m_length;  }
-	char* getData() { return m_dataPtr;  }
+	char const* getData() { return m_dataPtr;  }
 	
 private:
 	std::size_t m_length;
@@ -52,10 +52,10 @@ public:
 		std::size_t length
 		);
 	TCPData receive();
+	void shutdown();
+	void close();
 
 protected:
-	SOCKET getSocket() { return m_socket;  }
-	void setSocket(SOCKET socket) { m_socket = socket;  }
 
 private:
 	std::size_t m_bufferSize;

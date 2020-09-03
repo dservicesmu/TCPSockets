@@ -23,13 +23,13 @@ int main()
 
 			std::string msg("Send me some data");
 			socket.send(msg.c_str(), msg.length());
+			socket.shutdown();
 
 			do {
 				buf = socket.receive();
 				std::string msg(buf.getData(), buf.getLength());
 				std::cout << msg << std::endl;
 			} while (buf.getLength() > 0);
-
 		}
 		catch(std::runtime_error& rt)
 		{
