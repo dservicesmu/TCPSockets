@@ -1,9 +1,6 @@
 
-#include <Platform.h>
-#include <iostream>
 #include <Network.h>
-#include <TCPServer.h>
-#include <TCPSocket.h>
+#include <iostream>
 
 #pragma comment(lib, "Ws2_32.lib")
 

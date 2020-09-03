@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="NetworkDefs.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="TCPClient.h" />
     <ClInclude Include="Network.h" />

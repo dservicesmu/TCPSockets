@@ -2,15 +2,12 @@
 #define NETWORK_H
 
 #include <Platform.h>
+#include <NetworkDefs.h>
 #include <TCPServer.h>
 #include <TCPClient.h>
 
 #include <list>
 #include <memory>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-
-
 
 class Network
 {

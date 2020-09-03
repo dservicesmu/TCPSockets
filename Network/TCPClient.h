@@ -2,9 +2,9 @@
 #define TCP_CLIENT_H
 
 #include <Platform.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <NetworkDefs.h>
 #include <TCPSocket.h>
+
 
 class TCPClient
 {

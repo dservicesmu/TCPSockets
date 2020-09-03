@@ -1,10 +1,11 @@
 
-#include "TCPSocket.h"
+#include <TCPSocket.h>
 #include <array>
 #include <strstream>
 
 TCPSocket::TCPSocket(
-    ) : m_bufferSize(256)
+    ) : m_mode(Mode::Blocking)
+      , m_bufferSize(256)
       , m_receiveSize(0)
       , m_socket(INVALID_SOCKET)
       , m_bufferPtr(NULL)
@@ -15,7 +16,8 @@ TCPSocket::TCPSocket(
 TCPSocket::TCPSocket(
     SOCKET socket,
     std::size_t bufferSize
-    ) : m_bufferSize(bufferSize)
+    ) : m_mode(Mode::Blocking)
+      , m_bufferSize(bufferSize)
       , m_receiveSize(0)
       , m_socket(socket)
       , m_bufferPtr(NULL)
@@ -25,7 +27,8 @@ TCPSocket::TCPSocket(
 
 TCPSocket::TCPSocket(
     const TCPSocket& src
-    ) : m_bufferSize(src.m_bufferSize)
+    ) : m_mode(src.m_mode)
+      , m_bufferSize(src.m_bufferSize)
       , m_receiveSize(0)
       , m_socket(src.m_socket)
       , m_bufferPtr(NULL)
@@ -38,6 +41,7 @@ TCPSocket::TCPSocket(
 
 TCPSocket::~TCPSocket()
 {
+    m_mode = Mode::Invalid;
     m_bufferSize = 0;
     delete[] m_bufferPtr;
 }
@@ -46,6 +50,7 @@ TCPSocket& TCPSocket::operator=(const TCPSocket& src)
 {
     if (this != &src)
     {
+        m_mode = src.m_mode;
         m_bufferSize = src.m_bufferSize;
         m_receiveSize = src.m_receiveSize;
         m_socket = src.m_socket;
@@ -55,6 +60,33 @@ TCPSocket& TCPSocket::operator=(const TCPSocket& src)
         }
     }
     return *this;
+}
+
+Mode TCPSocket::getMode()
+{
+    return m_mode;
+}
+
+void TCPSocket::setMode(Mode mode)
+{
+    m_mode = mode;
+    if (m_mode != Mode::Invalid)
+    {
+        u_long winsockmode = 0;
+        switch (m_mode)
+        {
+        case Mode::Blocking: winsockmode = 0; break;
+        case Mode::Nonblocking: winsockmode = 1; break;
+        }
+        int iResult = ioctlsocket(m_socket, FIONBIO, &winsockmode);
+		if (iResult == SOCKET_ERROR)
+		{
+			std::ostrstream msg;
+			msg << "Getpeername on socket failed, error = " << WSAGetLastError() << std::ends;
+			throw std::runtime_error(msg.str());
+		}
+    }
+
 }
 
 std::string TCPSocket::getAddress()

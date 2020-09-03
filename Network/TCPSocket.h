@@ -2,9 +2,8 @@
 #define TCP_SOCKET_H
 
 #include <Platform.h>
+#include <NetworkDefs.h>
 #include <string>
-#include <winsock2.h>
-#include <ws2tcpip.h>
 
 class TCPData
 {
@@ -41,10 +40,12 @@ public:
 		std::size_t bufferSize = 256
 		);
 	TCPSocket(const TCPSocket& src);
-
 	~TCPSocket();
 
 	TCPSocket& operator=(const TCPSocket& src);
+
+	Mode getMode();
+	void setMode(Mode mode);
 
 	std::string getAddress();
 	void send(
@@ -58,6 +59,7 @@ public:
 protected:
 
 private:
+	Mode m_mode;
 	std::size_t m_bufferSize;
 	std::size_t m_receiveSize;
 	char* m_bufferPtr;

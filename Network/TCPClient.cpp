@@ -1,16 +1,9 @@
 // Client
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-
 #include <TCPClient.h>
 #include <iostream>
 #include <strstream>
 #include <array>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-
 
 TCPSocket TCPClient::connect(
 	std::string const& host,

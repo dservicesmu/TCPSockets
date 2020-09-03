@@ -2,8 +2,7 @@
 #define TCP_SERVER_H
 
 #include <Platform.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <NetworkDefs.h>
 #include <TCPSocket.h>
 
 class TCPServer
@@ -11,6 +10,9 @@ class TCPServer
 public:
 	TCPServer() {}
 	~TCPServer() {}
+
+	Mode getMode();
+	void setMode(Mode mode);
 
 	void bind(std::uint16_t port);
 	void listen();

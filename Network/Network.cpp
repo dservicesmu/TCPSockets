@@ -1,8 +1,5 @@
-// Network.cpp : Defines the functions for the static library.
-//
 
-
-#include "Network.h"
+#include <Network.h>
 #include <exception>
 #include <strstream>
 
