@@ -9,7 +9,7 @@ class TCPServer
 {
 	friend class Network;
 protected:
-	TCPServer(Mode mode = Mode::Nonblocking);
+	TCPServer(Mode mode = Mode::Blocking);
 
 public:
 	~TCPServer();
