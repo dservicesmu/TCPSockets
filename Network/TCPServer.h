@@ -27,6 +27,7 @@ private:
 	Mode m_mode;
 	FD_SET m_listenSet;
     SOCKET m_listenSocket;
+	struct timeval m_timeval;
 };
 
 #endif // TCP_SERVER_H

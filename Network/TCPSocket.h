@@ -47,6 +47,8 @@ public:
 	Mode getMode();
 	void setMode(Mode mode);
 
+	bool isValid() { return m_socket != INVALID_SOCKET; }
+
 	std::string getAddress();
 	void send(
 		char const* dataPtr,

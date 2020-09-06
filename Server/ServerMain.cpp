@@ -1,6 +1,9 @@
 
 #include <Network.h>
 #include <iostream>
+#include <thread>
+
+using namespace std::chrono_literals;
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -17,11 +20,16 @@ int main()
 			TCPSocket socket;
 			std::uint16_t portNumber = 48000;
 
-			server = network->createTCPServer(Mode::Blocking);
+			server = network->createTCPServer(Mode::Nonblocking);
 			server->bind(portNumber);
 			server->listen();
 			std::cout << "Server listening or port " << portNumber << std::endl;
-			socket = server->accept();
+
+			do {
+				socket = server->accept();
+				std::cout << "Waiting for client connection" << std::endl;
+				std::this_thread::sleep_for(1s);
+			} while (!socket.isValid());
 			std::cout << "Client connected from " << socket.getAddress() << std::endl;
 
 			TCPData buf;

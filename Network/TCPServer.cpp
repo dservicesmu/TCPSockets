@@ -6,6 +6,7 @@ TCPServer::TCPServer(
     Mode mode
     ) : m_mode(mode)
       , m_listenSocket(INVALID_SOCKET)
+      , m_timeval{0l, 0l}
 {
     FD_ZERO(&m_listenSet);
 }
@@ -55,10 +56,9 @@ void TCPServer::bind(std::uint16_t port)
         if (iResult == SOCKET_ERROR)
         {
             std::ostrstream msg;
-            msg << "Getpeername on socket failed, error = " << WSAGetLastError() << std::ends;
+            msg << "IOCTL on server listen socket failed, error = " << WSAGetLastError() << std::ends;
             throw std::runtime_error(msg.str());
         }
-        FD_SET(m_listenSocket, &m_listenSet);
     }
 
     // Bind the listening socket
@@ -66,7 +66,7 @@ void TCPServer::bind(std::uint16_t port)
     if (iResult == SOCKET_ERROR)
     {
         std::ostrstream msg;
-        msg << "Sever socket bind failed, error = " << WSAGetLastError() << std::ends;
+        msg << "Sever listen socket bind failed, error = " << WSAGetLastError() << std::ends;
         freeaddrinfo(pAddrOut);
         closesocket(m_listenSocket);
         throw std::runtime_error(msg.str());
@@ -95,7 +95,7 @@ void TCPServer::stopListen()
 		if (iResult == SOCKET_ERROR)
 		{
 			std::ostrstream msg;
-			msg << "Call to closesocket failed, error = " << WSAGetLastError() << std::ends;
+			msg << "Call to closesocket on server listen socket failed, error = " << WSAGetLastError() << std::ends;
 			throw std::runtime_error(msg.str());
 		}
 		m_listenSocket = INVALID_SOCKET;
@@ -105,6 +105,19 @@ void TCPServer::stopListen()
 TCPSocket TCPServer::accept()
 {
 	SOCKET socket = INVALID_SOCKET;
+    if (m_mode == Mode::Nonblocking)
+    {
+        FD_ZERO(&m_listenSet);
+        FD_SET(m_listenSocket, &m_listenSet);
+        int iResult = select(0, &m_listenSet, NULL, NULL, &m_timeval);
+        if (iResult == SOCKET_ERROR)
+        {
+			std::ostrstream msg;
+			msg << "Select on server listen socket in non-blocking mode failed, error = " << WSAGetLastError() << std::ends;
+			closesocket(m_listenSocket);
+			throw std::runtime_error(msg.str());
+        }
+    }
     if (m_mode == Mode::Blocking
         || (m_mode == Mode::Nonblocking && FD_ISSET(m_listenSocket, &m_listenSet)))
     {
