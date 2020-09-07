@@ -4,6 +4,13 @@
 #include <Platform.h>
 #include <NetworkDefs.h>
 #include <string>
+#include <limits>
+
+// Use std::max template not macro since it conflicts
+// with max function in numeric_limits.
+#ifdef max
+#undef max
+#endif
 
 class TCPData
 {
@@ -26,6 +33,9 @@ public:
 	std::size_t getLength() { return m_length;  }
 	char const* getData() { return m_dataPtr;  }
 	
+	static const std::size_t DATA_PENDING =
+		std::numeric_limits<std::size_t>::max();
+
 private:
 	std::size_t m_length;
 	char* m_dataPtr;

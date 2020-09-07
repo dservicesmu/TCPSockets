@@ -2,13 +2,8 @@
 #include <Network.h>
 #include <iostream>
 #include <thread>
-#include <limits>
 
 using namespace std::chrono_literals;
-
-#ifdef max
-#undef max
-#endif
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -32,6 +27,8 @@ int main()
 			socket.send(msg.c_str(), msg.length());
 			socket.shutdown();
 			
+			// Non-blocking update for socket to server.
+			/********************************************************************************/
 			bool gotTheMessage = false;
 			do {
 				std::cout << "Waiting for server to send data" << std::endl;
@@ -41,7 +38,7 @@ int main()
 				{
 					do {
 						buf = socket.receive();
-						if (buf.getLength() == std::numeric_limits<std::size_t>::max())
+						if (buf.getLength() == TCPData::DATA_PENDING)
 						{
 							break;
 						}
@@ -54,6 +51,8 @@ int main()
 					gotTheMessage = true;
 				}
 			} while (!gotTheMessage);
+			/********************************************************************************/
+			socket.close();
 		}
 		catch(std::runtime_error& rt)
 		{

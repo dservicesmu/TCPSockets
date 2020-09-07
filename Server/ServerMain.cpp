@@ -25,13 +25,18 @@ int main()
 			server->listen();
 			std::cout << "Server listening or port " << portNumber << std::endl;
 
+			// Non-blocking update for listen socket
+			/********************************************************************************/
 			do {
 				socket = server->accept();
 				std::cout << "Waiting for client connection" << std::endl;
 				std::this_thread::sleep_for(1s);
 			} while (!socket.isValid());
 			std::cout << "Client connected from " << socket.getAddress() << std::endl;
+			/********************************************************************************/
 
+			// Non-blocking update for socket to client.
+			/********************************************************************************/
 			TCPData buf;
 			do {
 				buf = socket.receive();
@@ -39,13 +44,16 @@ int main()
 				if (buf.getLength() > 0)
 				{
 					std::cout << "Received message from client: " << msg << std::endl;
+					std::string data("Here is your data");
+					socket.send(&data[0], data.length());
 				}
-				std::string data("Here is your data");
-				socket.send(&data[0], data.length());
 			} while (buf.getLength() > 0);
+			/********************************************************************************/
+
 			std::cout << "Client disconnecting..." << std::endl;
 			server->stopListen();
 			socket.shutdown();
+			socket.close();
 		}
 		catch(std::runtime_error& rt)
 		{

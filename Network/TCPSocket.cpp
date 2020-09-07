@@ -1,13 +1,8 @@
 
 #include <TCPSocket.h>
-#include <limits>
 #include <array>
 #include <strstream>
 #include <iostream>
-
-#ifdef max
-#undef max
-#endif
 
 TCPSocket::TCPSocket(
     ) : m_mode(Mode::Blocking)
@@ -160,7 +155,7 @@ TCPData TCPSocket::receive()
         int error = WSAGetLastError();
         if (error == WSAEWOULDBLOCK && m_mode == Mode::Nonblocking)
         {
-            return TCPData{std::numeric_limits<std::size_t>::max(), NULL};
+            return TCPData{TCPData::DATA_PENDING, NULL};
         }
         else
         {
