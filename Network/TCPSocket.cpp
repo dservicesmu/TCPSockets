@@ -1,13 +1,20 @@
 
 #include <TCPSocket.h>
+#include <limits>
 #include <array>
 #include <strstream>
+#include <iostream>
+
+#ifdef max
+#undef max
+#endif
 
 TCPSocket::TCPSocket(
     ) : m_mode(Mode::Blocking)
+      , m_socket(INVALID_SOCKET)
+      , m_timeval{0l, 0l}
       , m_bufferSize(256)
       , m_receiveSize(0)
-      , m_socket(INVALID_SOCKET)
       , m_bufferPtr(NULL)
 {
     FD_ZERO(&m_fdSet);
@@ -16,11 +23,13 @@ TCPSocket::TCPSocket(
 
 TCPSocket::TCPSocket(
     SOCKET socket,
+    Mode mode,
     std::size_t bufferSize
-    ) : m_mode(Mode::Blocking)
+    ) : m_mode(mode)
+      , m_socket(socket)
+      , m_timeval{0l, 0l}
       , m_bufferSize(bufferSize)
       , m_receiveSize(0)
-      , m_socket(socket)
       , m_bufferPtr(NULL)
 {
     FD_ZERO(&m_fdSet);
@@ -30,11 +39,12 @@ TCPSocket::TCPSocket(
 TCPSocket::TCPSocket(
     const TCPSocket& src
     ) : m_mode(src.m_mode)
+      , m_socket(src.m_socket)
+      , m_fdSet(src.m_fdSet)
+      , m_timeval(src.m_timeval)
       , m_bufferSize(src.m_bufferSize)
       , m_receiveSize(0)
-      , m_socket(src.m_socket)
       , m_bufferPtr(NULL)
-      , m_fdSet(src.m_fdSet)
 {
     if (m_bufferSize > 0)
     {
@@ -45,7 +55,10 @@ TCPSocket::TCPSocket(
 TCPSocket::~TCPSocket()
 {
     m_mode = Mode::Invalid;
+    m_socket = INVALID_SOCKET;
+    FD_ZERO(&m_fdSet);
     m_bufferSize = 0;
+    m_receiveSize = 0;
     delete[] m_bufferPtr;
 }
 
@@ -144,12 +157,42 @@ TCPData TCPSocket::receive()
     int iResult = ::recv(m_socket, m_bufferPtr, static_cast<int>(m_bufferSize), 0);
     if (iResult == SOCKET_ERROR)
     {
-		std::ostrstream msg;
-		msg << "Call to receive failed, error = " << WSAGetLastError() << std::ends;
-		closesocket(m_socket);
-		throw std::runtime_error(msg.str());
+        int error = WSAGetLastError();
+        if (error == WSAEWOULDBLOCK && m_mode == Mode::Nonblocking)
+        {
+            return TCPData{std::numeric_limits<std::size_t>::max(), NULL};
+        }
+        else
+        {
+			std::ostrstream msg;
+			msg << "Call to receive failed, error = " << error << std::ends;
+			closesocket(m_socket);
+			throw std::runtime_error(msg.str());
+        }
     }
     return TCPData{ static_cast<std::size_t>(iResult), m_bufferPtr };
+}
+
+bool TCPSocket::isDataAvailable()
+{
+    if (m_mode == Mode::Nonblocking)
+    {
+        FD_ZERO(&m_fdSet);
+        FD_SET(m_socket, &m_fdSet);
+        int iResult = select(0, &m_fdSet, NULL, NULL, &m_timeval);
+        if (iResult == SOCKET_ERROR)
+        {
+            std::ostrstream msg;
+            msg << "Select on socket in non-blocking mode failed, error = " << WSAGetLastError() << std::ends;
+            closesocket(m_socket);
+            throw std::runtime_error(msg.str());
+        }
+        return FD_ISSET(m_socket, &m_fdSet);
+    }
+    else
+    {
+        throw std::runtime_error("Function isDataAvailable is only valid in non-blocking mode");
+    }
 }
 
 void TCPSocket::shutdown()

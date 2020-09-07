@@ -10,20 +10,21 @@ class TCPClient
 {
 	friend class Network;
 protected:
-	TCPClient() {}
+	TCPClient() : m_mode(Mode::Blocking) {}
 
 public:
 	~TCPClient() {}
 
 	TCPSocket connect(
 		std::string const& host,
-		std::uint16_t port
+		std::uint16_t port,
+		Mode mode = Mode::Blocking
 		);
 
 protected:
 
 private:
-
+	Mode m_mode;
 };
 
 #endif // TCP_CLIENT_H

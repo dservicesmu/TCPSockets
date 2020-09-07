@@ -37,6 +37,7 @@ public:
 	TCPSocket();
 	TCPSocket(
 		SOCKET socket,
+		Mode mode = Mode::Blocking,
 		std::size_t bufferSize = 256
 		);
 	TCPSocket(const TCPSocket& src);
@@ -44,17 +45,23 @@ public:
 
 	TCPSocket& operator=(const TCPSocket& src);
 
+	std::size_t getBufferSize() { return m_bufferSize;  }
+
 	Mode getMode();
 	void setMode(Mode mode);
 
 	bool isValid() { return m_socket != INVALID_SOCKET; }
 
 	std::string getAddress();
+
 	void send(
 		char const* dataPtr,
 		std::size_t length
 		);
 	TCPData receive();
+
+	bool isDataAvailable();
+
 	void shutdown();
 	void close();
 
@@ -62,11 +69,14 @@ protected:
 
 private:
 	Mode m_mode;
+	SOCKET m_socket;
+
+	FD_SET m_fdSet;
+	struct timeval m_timeval;
+
 	std::size_t m_bufferSize;
 	std::size_t m_receiveSize;
 	char* m_bufferPtr;
-	SOCKET m_socket;
-	FD_SET m_fdSet;
 };
 
 #endif  // TCP_SOCKET_H

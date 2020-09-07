@@ -57,6 +57,7 @@ void TCPServer::bind(std::uint16_t port)
         {
             std::ostrstream msg;
             msg << "IOCTL on server listen socket failed, error = " << WSAGetLastError() << std::ends;
+            closesocket(m_listenSocket);
             throw std::runtime_error(msg.str());
         }
     }

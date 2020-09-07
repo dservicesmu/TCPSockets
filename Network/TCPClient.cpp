@@ -7,10 +7,13 @@
 
 TCPSocket TCPClient::connect(
 	std::string const& host,
-	std::uint16_t port
+	std::uint16_t port,
+    Mode mode
 	)
 {
-	 // Resolve the port locally
+    m_mode = mode;
+
+    // Resolve the port locally
     struct addrinfo  addrHintsIn;
     struct addrinfo* pAddrOut = NULL;
 
@@ -40,7 +43,7 @@ TCPSocket TCPClient::connect(
         throw std::runtime_error(msg.str());
     }
 
-     // Connect to the server
+    // Connect to the server
     iResult = ::connect(socket, pAddrOut->ai_addr, (int)pAddrOut->ai_addrlen);
     if (iResult == SOCKET_ERROR)
     {
@@ -55,5 +58,19 @@ TCPSocket TCPClient::connect(
         msg << "Connection failed" << std::ends;
         throw std::runtime_error(msg.str());
     }
-    return TCPSocket(socket);
+
+    // Set blocking mode as needed.
+    if (m_mode == Mode::Nonblocking)
+    {
+        u_long winsockmode = 1;
+        int iResult = ioctlsocket(socket, FIONBIO, &winsockmode);
+        if (iResult == SOCKET_ERROR)
+        {
+            std::ostrstream msg;
+            msg << "IOCTL on server listen socket failed, error = " << WSAGetLastError() << std::ends;
+            closesocket(socket);
+            throw std::runtime_error(msg.str());
+        }
+    }
+    return TCPSocket(socket, m_mode);
 }
