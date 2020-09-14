@@ -2,10 +2,18 @@
 #include <Network.h>
 #include <iostream>
 #include <thread>
+#include <cstdint>
+#include <array>
 
 using namespace std::chrono_literals;
 
 #pragma comment(lib, "Ws2_32.lib")
+
+struct MessageHeader
+{
+	std::uint16_t m_id;
+	std::uint16_t m_size;
+};
 
 int main()
 {
@@ -23,8 +31,15 @@ int main()
 			client = network->createTCPClient();
 			socket = client->connect(std::string("MathTixWinDev"), 48000, Mode::Nonblocking);
 
-			std::string msg("Send me some data");
-			socket.send(msg.c_str(), msg.length());
+			std::array<char, 256> buffer;
+			MessageHeader* headerPtr = reinterpret_cast<MessageHeader*>(&buffer[0]);
+			headerPtr->m_id = 1;
+			headerPtr->m_size = 3;
+			buffer[4] = 'F';
+			buffer[5] = 'u';
+			buffer[6] = 'n';
+			
+			socket.send(&buffer[0], 7);
 			socket.shutdown();
 			
 			// Non-blocking update for socket to server.
